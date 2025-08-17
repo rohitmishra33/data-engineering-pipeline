@@ -87,4 +87,7 @@ public class ProcessedRecord {
     public String getSaleDate() { return saleDate; }
     public String getCustomerEmail() { return customerEmail; }
     public double getRevenue() { return revenue; }
+
+    // Setter for revenue as it is a computed field
+    public void setRevenue(double revenue) { this.revenue = revenue; }
 }
