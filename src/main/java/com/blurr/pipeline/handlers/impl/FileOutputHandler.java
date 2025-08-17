@@ -97,6 +97,7 @@ public class FileOutputHandler implements DataHandler, Closeable {
             try {
                 writer.flush();
                 writer.close();
+                writer = null;
             } catch (IOException e) {
                 System.err.println("Failed to close file writer: " + e.getMessage());
             }

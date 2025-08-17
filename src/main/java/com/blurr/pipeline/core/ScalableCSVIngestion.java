@@ -1,9 +1,12 @@
 package com.blurr.pipeline.core;
 
 // Main ingestion orchestrator class
+
 import com.blurr.pipeline.config.IngestionConfig;
+import com.blurr.pipeline.handlers.impl.ThreadLocalFileOutputHandler;
 import com.blurr.pipeline.models.DataBatch;
 import com.blurr.pipeline.models.IngestionResult;
+import com.blurr.pipeline.models.ProcessingStrategy;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +37,7 @@ public class ScalableCSVIngestion {
                 new LinkedBlockingQueue<>(),
                 new ThreadFactory() {
                     private final AtomicInteger counter = new AtomicInteger(0);
+
                     @Override
                     public Thread newThread(Runnable r) {
                         Thread t = new Thread(r, "CSV-Processor-" + counter.incrementAndGet());
@@ -65,6 +69,10 @@ public class ScalableCSVIngestion {
         // Wait for all consumers to finish
         for (Future<?> consumer : consumers) {
             consumer.get();
+        }
+
+        if (config.getStrategy().equals(ProcessingStrategy.FILE_OUTPUT)) {
+            ThreadLocalFileOutputHandler.performFinalMerge();
         }
 
         long endTime = System.currentTimeMillis();
