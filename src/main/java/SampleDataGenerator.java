@@ -58,8 +58,8 @@ public class SampleDataGenerator {
         return Math.round((RANDOM.nextDouble() * 495.0 + 5.0) * 100.0) / 100.0;
     }
 
-    private static long randomDiscountPercent() {
-        return Math.round((RANDOM.nextDouble() * 1.2) * 100); // 0–120, some >100 error
+    private static int randomDiscountPercent() {
+        return Math.toIntExact(Math.round((RANDOM.nextDouble() * 1.2) * 100)); // 0–120, some >100 error
     }
 
     private static String randomDate() {
@@ -126,7 +126,7 @@ public class SampleDataGenerator {
                 String category = randomCategory();
                 String quantity = randomQuantity();
                 double unitPrice = randomUnitPrice();
-                long discountPercent = randomDiscountPercent();
+                int discountPercent = randomDiscountPercent();
                 String region = randomRegion();
                 String saleDate = randomDate();
                 String customerEmail = randomEmail();
