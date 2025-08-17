@@ -22,7 +22,7 @@ public class Main {
 
         try {
             System.out.println("Starting ingestion of 100M rows...");
-            IngestionResult result = ingestion.ingestFile("sample_data_100000_rows.csv");
+            IngestionResult result = ingestion.ingestFile("sample_data_100000000_rows.csv");
             System.out.println("Ingestion completed: " + result);
         } catch (Exception e) {
             System.err.println("Ingestion failed: " + e.getMessage());
