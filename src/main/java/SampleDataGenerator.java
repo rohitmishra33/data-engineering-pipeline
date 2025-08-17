@@ -61,11 +61,6 @@ public class SampleDataGenerator {
     private static double randomDiscountPercent() {
         return Math.round((RANDOM.nextDouble() * 1.5) * 100.0) / 100.0; // 0.0–1.5, some >1 error
     }
-
-    private static String randomRegionName() {
-        return REGIONS[RANDOM.nextInt(REGIONS.length)];
-    }
-
     private static String randomDate() {
         // Sometimes null
         if (RANDOM.nextInt(10) == 0) return ""; // 10% nulls
@@ -91,15 +86,6 @@ public class SampleDataGenerator {
             return 0.0;
         }
     }
-
-    private static String randomOrderId(List<String> prevOrderIds) {
-        String base = randomAlphaNumeric(10);
-        if (RANDOM.nextDouble() < 0.1 && !prevOrderIds.isEmpty()) { // 10% chance duplicate
-            return prevOrderIds.get(RANDOM.nextInt(prevOrderIds.size()));
-        }
-        return base;
-    }
-
     private static String randomAlphaNumeric(int count) {
         StringBuilder sb = new StringBuilder(count);
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -116,14 +102,23 @@ public class SampleDataGenerator {
         int numRows = Integer.parseInt(args[0]);
         String fileName = "sample_data_" + numRows + "_rows.csv";
 
+        final int ORDER_ID_BUFFER_SIZE = 10000;
+        String[] orderIdBuffer = new String[ORDER_ID_BUFFER_SIZE];
+
         try (BufferedWriter writer = Files.newBufferedWriter(
                 Paths.get(fileName), StandardCharsets.UTF_8)) {
             writer.write("order_id,product_name,category,quantity,unit_price,discount_percent,region,sale_date,customer_email,revenue\n");
 
-            List<String> orderIds = new ArrayList<>();
             for (int i = 0; i < numRows; i++) {
-                String orderId = randomOrderId(orderIds);
-                orderIds.add(orderId);
+                // Generate order id, 10% chance duplicate from buffer
+                String orderId;
+                if (i >= ORDER_ID_BUFFER_SIZE && RANDOM.nextDouble() < 0.1) {
+                    orderId = orderIdBuffer[RANDOM.nextInt(ORDER_ID_BUFFER_SIZE)];
+                } else {
+                    orderId = randomAlphaNumeric(10);
+                    // Store in buffer in a ring fashion
+                    orderIdBuffer[i % ORDER_ID_BUFFER_SIZE] = orderId;
+                }
 
                 String productName = randomProductName();
                 String category = randomCategory();
@@ -150,6 +145,11 @@ public class SampleDataGenerator {
                 };
                 writer.write(csvRow(fields));
                 writer.newLine();
+
+                // Optional: progress indicator (every 1 million rows)
+                if ((i + 1) % 1_000_000 == 0) {
+                    System.out.println("Generated " + (i + 1) + " rows...");
+                }
             }
         }
 
