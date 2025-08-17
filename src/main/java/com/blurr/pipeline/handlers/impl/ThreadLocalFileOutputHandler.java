@@ -19,7 +19,7 @@ public class ThreadLocalFileOutputHandler implements DataHandler, Closeable {
     private static final MergeCoordinator mergeCoordinator = new MergeCoordinator();
 
     private final ThreadLocal<FileOutputHandler> threadLocalHandler = ThreadLocal.withInitial(() -> {
-        String threadId = Thread.currentThread().getName() + "-" + Thread.currentThread().getId() + "-" + System.nanoTime();
+        String threadId = Thread.currentThread().getName();
         FileOutputHandler handler = new FileOutputHandler(threadId);
         handlers.put(threadId, handler);
 
