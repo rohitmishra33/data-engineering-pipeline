@@ -58,9 +58,10 @@ public class SampleDataGenerator {
         return Math.round((RANDOM.nextDouble() * 495.0 + 5.0) * 100.0) / 100.0;
     }
 
-    private static double randomDiscountPercent() {
-        return Math.round((RANDOM.nextDouble() * 1.5) * 100.0) / 100.0; // 0.0–1.5, some >1 error
+    private static long randomDiscountPercent() {
+        return Math.round((RANDOM.nextDouble() * 1.2) * 100); // 0–120, some >100 error
     }
+
     private static String randomDate() {
         // Sometimes null
         if (RANDOM.nextInt(10) == 0) return ""; // 10% nulls
@@ -86,6 +87,7 @@ public class SampleDataGenerator {
             return 0.0;
         }
     }
+
     private static String randomAlphaNumeric(int count) {
         StringBuilder sb = new StringBuilder(count);
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -124,7 +126,7 @@ public class SampleDataGenerator {
                 String category = randomCategory();
                 String quantity = randomQuantity();
                 double unitPrice = randomUnitPrice();
-                double discountPercent = randomDiscountPercent();
+                long discountPercent = randomDiscountPercent();
                 String region = randomRegion();
                 String saleDate = randomDate();
                 String customerEmail = randomEmail();
