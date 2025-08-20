@@ -27,7 +27,7 @@ public class Main {
         ScalableCSVIngestion ingestion = new ScalableCSVIngestion(config);
 
         try {
-            System.out.println("Starting ingestion of CSV...");
+            System.out.println("Starting CSV ingestion...");
             IngestionResult result = ingestion.ingestFile("sample_data_1000000_rows.csv");
             System.out.println("Ingestion completed: " + result);
         } catch (Exception e) {
