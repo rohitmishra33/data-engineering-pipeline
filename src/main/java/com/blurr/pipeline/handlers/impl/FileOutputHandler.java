@@ -7,37 +7,51 @@ import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class FileOutputHandler implements DataHandler, Closeable {
-
+public class FileOutputHandler implements Closeable, DataHandler {
     private static final String OUTPUT_DIR = "output";
 
     private BufferedWriter writer;
-    private boolean headerWritten = false;
-    private final Path tempFilePath;
-    private AtomicLong totalProcessedRows = new AtomicLong(0);
+    private Path tempFilePath;
+    private final AtomicLong rowCount = new AtomicLong(0);
+    private volatile boolean headerWritten = false;
+    private volatile boolean closed = false;
+    private String threadIdentifier;
 
-    public FileOutputHandler(String threadId) {
+    public FileOutputHandler() {
+    }
+
+    public void initializeFileWriter() {
+        // Get the current thread info when the handler is actually used
+        this.threadIdentifier = Thread.currentThread().getName();
+
         try {
+            // Create output directory if it doesn't exist
             Path outputDir = Paths.get(OUTPUT_DIR);
             if (!Files.exists(outputDir)) {
                 Files.createDirectories(outputDir);
             }
 
-            this.tempFilePath = outputDir.resolve("temp_output_" + threadId + ".csv");
+            // Create temp file with unique thread identifier
+            this.tempFilePath = outputDir.resolve("temp_output_" + threadIdentifier + ".csv");
             this.writer = new BufferedWriter(new FileWriter(tempFilePath.toFile(), false));
+
         } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize FileOutputHandler for thread " + threadId, e);
+            throw new RuntimeException("Failed to initialize FileOutputHandler for thread " + threadIdentifier, e);
         }
     }
 
-    @Override
     public synchronized void handle(List<ProcessedRecord> records) {
+        if (writer == null) {
+            initializeFileWriter();
+        }
+        if (closed) {
+            throw new IllegalStateException("Handler is already closed for thread " + threadIdentifier);
+        }
+
         try {
             if (!headerWritten) {
                 writeHeader();
@@ -48,15 +62,18 @@ public class FileOutputHandler implements DataHandler, Closeable {
                 writer.write(toCsvRow(record));
                 writer.newLine();
             }
+
             writer.flush();
-            totalProcessedRows.addAndGet(records.size());
+            rowCount.addAndGet(records.size());
+
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write batch to file: " + tempFilePath, e);
+            throw new RuntimeException("Failed to write batch in thread " + threadIdentifier, e);
         }
     }
 
     private void writeHeader() throws IOException {
-        String header = "order_id,product_name,category,quantity,unit_price,discount_percent,region,sale_date,customer_email,revenue";
+        String header = "order_id,product_name,category,quantity,unit_price," +
+                "discount_percent,region,sale_date,customer_email,revenue";
         writer.write(header);
         writer.newLine();
     }
@@ -88,18 +105,24 @@ public class FileOutputHandler implements DataHandler, Closeable {
     }
 
     public long getTotalProcessedRows() {
-        return totalProcessedRows.get();
+        return rowCount.get();
+    }
+
+    public String getThreadIdentifier() {
+        return threadIdentifier;
     }
 
     @Override
     public void close() {
-        if (writer != null) {
+        if (!closed) {
+            closed = true;
             try {
-                writer.flush();
-                writer.close();
-                writer = null;
+                if (writer != null) {
+                    writer.flush();
+                    writer.close();
+                }
             } catch (IOException e) {
-                System.err.println("Failed to close file writer: " + e.getMessage());
+                System.err.println("Failed to close output handler for thread " + threadIdentifier + ": " + e.getMessage());
             }
         }
     }
