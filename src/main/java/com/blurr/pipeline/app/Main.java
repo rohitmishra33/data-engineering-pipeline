@@ -21,14 +21,14 @@ public class Main {
                 .processorThreads(Integer.parseInt(Objects.requireNonNull(dotenv.get("PROCESSOR_THREADS"))))
                 .queueCapacity(Integer.parseInt(Objects.requireNonNull(dotenv.get("QUEUE_CAPACITY"))))
                 .skipHeader(Boolean.getBoolean(dotenv.get("SKIP_HEADER")))
-                .strategy(ProcessingStrategy.valueOf(dotenv.get("STRATEGY")))
+                .strategy(ProcessingStrategy.valueOf(dotenv.get("INGESTION_STRATEGY")))
                 .build();
 
         ScalableCSVIngestion ingestion = new ScalableCSVIngestion(config);
 
         try {
-            System.out.println("Starting ingestion of 100M rows...");
-            IngestionResult result = ingestion.ingestFile("sample_data_10000000_rows.csv");
+            System.out.println("Starting ingestion of CSV...");
+            IngestionResult result = ingestion.ingestFile("sample_data_1000000_rows.csv");
             System.out.println("Ingestion completed: " + result);
         } catch (Exception e) {
             System.err.println("Ingestion failed: " + e.getMessage());
@@ -38,7 +38,7 @@ public class Main {
         }
 
         // Run Analytics
-        if (ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("STRATEGY")))) {
+        if (ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("INGESTION_STRATEGY")))) {
             AnalyticalDataRefresher.refreshAnalyticsAfterIngestion();
         }
     }
