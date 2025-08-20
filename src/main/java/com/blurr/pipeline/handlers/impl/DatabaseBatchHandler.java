@@ -2,12 +2,14 @@ package com.blurr.pipeline.handlers.impl;
 
 import com.blurr.pipeline.handlers.DataHandler;
 import com.blurr.pipeline.models.ProcessedRecord;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DatabaseBatchHandler implements DataHandler {
+    private final Dotenv dotenv = Dotenv.configure().load();
     private final Connection connection;
     private final PreparedStatement insertIgnoreStatement;
 
@@ -28,15 +30,21 @@ public class DatabaseBatchHandler implements DataHandler {
 
     public DatabaseBatchHandler() {
         try {
+            String databaseHost = dotenv.get("DB_HOST");
+            int databasePort = Integer.parseInt(Objects.requireNonNull(dotenv.get("DB_PORT")));
+            String databaseName = dotenv.get("DB_DATABASE_NAME");
+            String databaseUser = dotenv.get("DB_USERNAME");
+            String databasePassword = dotenv.get("DB_PASSWORD");
+
             this.connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/dev_db?" +
+                    "jdbc:mysql://" + databaseHost + ":" + databasePort + "/" + databaseName + "?" +
                             "useServerPrepStmts=true&" +
                             "rewriteBatchedStatements=true&" +
                             "useLocalSessionState=true&" +
                             "sessionVariables=transaction_isolation='READ-COMMITTED'&" +
                             "useLocalTransactionState=true",
-                    "dev",
-                    "dev_12345"
+                    databaseUser,
+                    databasePassword
             );
 
             this.connection.setAutoCommit(false);

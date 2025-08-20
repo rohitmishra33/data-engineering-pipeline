@@ -85,7 +85,7 @@ public class ScalableCSVIngestion {
 
         boolean allDone = consumers.stream().allMatch(Future::isDone);
 
-        if (config.getStrategy().equals(ProcessingStrategy.FILE_OUTPUT)) {
+        if (ProcessingStrategy.FILE_OUTPUT.equals(config.getStrategy())) {
             List<Path> processedTempFiles = FileUtil.findPathsWithPrefix("output", "temp_output_");
             FileMergerUtil.mergeFiles(processedTempFiles, "final_output_" + processedRows.get() + "_rows.csv");
         }

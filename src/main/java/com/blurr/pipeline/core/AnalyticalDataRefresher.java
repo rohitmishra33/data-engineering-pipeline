@@ -1,8 +1,11 @@
 package com.blurr.pipeline.core;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class AnalyticalDataRefresher {
@@ -17,13 +20,20 @@ public class AnalyticalDataRefresher {
     private final AtomicLong tablesRefreshed = new AtomicLong(0);
 
     public AnalyticalDataRefresher() {
-        this.jdbcUrl = "jdbc:mysql://localhost:3306/dev_db?" +
+        Dotenv dotenv = Dotenv.configure().load();
+
+        String databaseHost = dotenv.get("DB_HOST");
+        int databasePort = Integer.parseInt(Objects.requireNonNull(dotenv.get("DB_PORT")));
+        String databaseName = dotenv.get("DB_DATABASE_NAME");
+
+        this.jdbcUrl = "jdbc:mysql://" + databaseHost + ":" + databasePort + "/" + databaseName + "?" +
                 "useServerPrepStmts=true&" +
                 "rewriteBatchedStatements=true&" +
                 "useLocalSessionState=true&" +
+                "sessionVariables=transaction_isolation='READ-COMMITTED'&" +
                 "useLocalTransactionState=true";
-        this.username = "dev";
-        this.password = "dev_12345";
+        this.username = dotenv.get("DB_USERNAME");
+        this.password = dotenv.get("DB_PASSWORD");
     }
 
     public AnalyticalDataRefresher(String jdbcUrl, String username, String password) {

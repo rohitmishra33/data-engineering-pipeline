@@ -5,23 +5,26 @@ import com.blurr.pipeline.core.AnalyticalDataRefresher;
 import com.blurr.pipeline.core.ScalableCSVIngestion;
 import com.blurr.pipeline.models.IngestionResult;
 import com.blurr.pipeline.models.ProcessingStrategy;
+import io.github.cdimascio.dotenv.Dotenv;
+
+import java.util.Objects;
 
 public class Main {
+    public static final Dotenv dotenv = Dotenv.configure().load();
+
     public static void main(String[] args) {
         // Configure ingestion
         IngestionConfig config = new IngestionConfig.Builder()
-                .batchSize(5000)  // Larger batches for 100M rows
-                .coreThreads(8)
-                .maxThreads(10)
-                .processorThreads(6)
-                .queueCapacity(500)
-                .skipHeader(true)
-                .strategy(ProcessingStrategy.FILE_OUTPUT)
+                .batchSize(Integer.parseInt(Objects.requireNonNull(dotenv.get("BATCH_SIZE"))))
+                .coreThreads(Integer.parseInt(Objects.requireNonNull(dotenv.get("CORE_THREADS"))))
+                .maxThreads(Integer.parseInt(Objects.requireNonNull(dotenv.get("MAX_THREADS"))))
+                .processorThreads(Integer.parseInt(Objects.requireNonNull(dotenv.get("PROCESSOR_THREADS"))))
+                .queueCapacity(Integer.parseInt(Objects.requireNonNull(dotenv.get("QUEUE_CAPACITY"))))
+                .skipHeader(Boolean.getBoolean(dotenv.get("SKIP_HEADER")))
+                .strategy(ProcessingStrategy.valueOf(dotenv.get("STRATEGY")))
                 .build();
 
         ScalableCSVIngestion ingestion = new ScalableCSVIngestion(config);
-
-//        new Scanner(System.in).nextLine();
 
         try {
             System.out.println("Starting ingestion of 100M rows...");
@@ -34,6 +37,8 @@ public class Main {
             ingestion.shutdown();
         }
 
-        AnalyticalDataRefresher.refreshAnalyticsAfterIngestion();
+        if (ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("STRATEGY")))) {
+            AnalyticalDataRefresher.refreshAnalyticsAfterIngestion();
+        }
     }
 }
