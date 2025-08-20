@@ -159,7 +159,7 @@ public class DataProcessor implements Runnable {
         }
     }
 
-    private double validateDiscount(double discount) {
+    public double validateDiscount(double discount) {
         if (discount < 0) {
             return 0.0;
         } else if (discount > MAX_DISCOUNT_PERCENT) {
@@ -169,7 +169,7 @@ public class DataProcessor implements Runnable {
         }
     }
 
-    private String normalizeRegion(String region) {
+    public String normalizeRegion(String region) {
         if (region == null || region.trim().isEmpty()) {
             return "unknown";
         }
@@ -182,18 +182,18 @@ public class DataProcessor implements Runnable {
         };
     }
 
-    private String validateEmail(String email) {
+    public String validateEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return null;
         }
         return email.contains("@") && email.contains(".com") ? email.trim() : null;
     }
 
-    private double calculateRevenue(int quantity, double unitPrice, double discountPercent) {
+    public double calculateRevenue(int quantity, double unitPrice, double discountPercent) {
         return Math.round(quantity * unitPrice * (100 - discountPercent)) / 100.0;
     }
 
-    private String parseDate(String dateStr) {
+    public String parseDate(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return null;
         }
