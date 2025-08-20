@@ -28,7 +28,7 @@ public class Main {
 
         try {
             System.out.println("Starting CSV ingestion...");
-            IngestionResult result = ingestion.ingestFile("sample_data_1000000_rows.csv");
+            IngestionResult result = ingestion.ingestFile(dotenv.get("INGESTION_FILE"));
             System.out.println("Ingestion completed: " + result);
         } catch (Exception e) {
             System.err.println("Ingestion failed: " + e.getMessage());
