@@ -58,7 +58,7 @@ Edit `src/main/resources/application.properties` file with your DB credentials:
 `mvn clean install`
 
 ### Run:
-- Run `java -Xmx8g com.blurr.pipeline.app.Main` to run the ingestion pipeline which will also ingest the file data and populate the analytical tables
+- Run `java -Xmx8g com.blurr.pipeline.app.Main` to run the ingestion pipeline which will ingest the file data and populate the analytical tables
 
 ---
 ## Analytics Dashboard
