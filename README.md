@@ -9,7 +9,7 @@ This platform consists of two main components:
 2. **Interactive Analytics Dashboard** - Spring Boot REST API with HTML/Chart.js frontend
 
 ---
-## Sample Data Generation Script
+## Sample Data Generation
 Run `java SampleDataGenerator 10000` to generate a file containing 10k lines of sample data that can be ingested via the ingestion pipeline.
 
 ---
