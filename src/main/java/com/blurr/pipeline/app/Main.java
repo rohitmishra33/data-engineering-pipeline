@@ -13,7 +13,7 @@ public class Main {
     public static final Dotenv dotenv = Dotenv.configure().load();
 
     public static void main(String[] args) {
-        // Configure ingestion
+        // Configure Ingestion
         IngestionConfig config = new IngestionConfig.Builder()
                 .batchSize(Integer.parseInt(Objects.requireNonNull(dotenv.get("BATCH_SIZE"))))
                 .coreThreads(Integer.parseInt(Objects.requireNonNull(dotenv.get("CORE_THREADS"))))
@@ -37,6 +37,7 @@ public class Main {
             ingestion.shutdown();
         }
 
+        // Run Analytics
         if (ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("STRATEGY")))) {
             AnalyticalDataRefresher.refreshAnalyticsAfterIngestion();
         }
