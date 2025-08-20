@@ -30,16 +30,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ScalableCSVIngestion {
-
-    private static final int DEFAULT_BATCH_SIZE = 10000;
-    private static final int DEFAULT_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
-    private static final int DEFAULT_QUEUE_CAPACITY = 1000;
-
     private final IngestionConfig config;
     private final ExecutorService executorService;
     private final BlockingQueue<DataBatch> processingQueue;
     private final AtomicLong processedRows = new AtomicLong(0);
-    private final AtomicInteger activeReaders = new AtomicInteger(0);
 
     public ScalableCSVIngestion(IngestionConfig config) {
         this.config = config;
