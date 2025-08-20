@@ -3,8 +3,8 @@ package com.blurr.pipeline.core;
 import com.blurr.pipeline.config.IngestionConfig;
 import com.blurr.pipeline.handlers.DataHandler;
 import com.blurr.pipeline.handlers.impl.DatabaseBatchHandler;
+import com.blurr.pipeline.handlers.impl.FileOutputHandler;
 import com.blurr.pipeline.handlers.impl.InMemoryStoreHandler;
-import com.blurr.pipeline.handlers.impl.ThreadLocalFileOutputHandler;
 import com.blurr.pipeline.models.DataBatch;
 import com.blurr.pipeline.models.ProcessedRecord;
 import com.blurr.pipeline.models.ProcessingStrategy;
@@ -23,7 +23,26 @@ public class DataProcessor implements Runnable {
     private final BlockingQueue<DataBatch> queue;
     private final AtomicLong processedRows;
     private final DataHandler dataHandler;
-    private final int MAX_DISCOUNT_PERCENT = 70;
+    private static final int MAX_DISCOUNT_PERCENT = 70;
+    private static final String[] POSSIBLE_FORMATS = {
+            "yyyy-MM-dd",
+            "dd/MM/yyyy",
+            "MM-dd-yyyy",
+            "MMMM d, yyyy"
+    };
+    private static final ThreadLocal<SimpleDateFormat[]> THREAD_LOCAL_FORMATTERS = ThreadLocal.withInitial(() -> {
+        SimpleDateFormat[] sdfs = new SimpleDateFormat[POSSIBLE_FORMATS.length];
+        for (int i = 0; i < POSSIBLE_FORMATS.length; i++) {
+            sdfs[i] = new SimpleDateFormat(POSSIBLE_FORMATS[i]);
+            sdfs[i].setLenient(false);
+        }
+        return sdfs;
+    });
+    private static final ThreadLocal<SimpleDateFormat> THREAD_LOCAL_OUTPUT_FORMATTER = ThreadLocal.withInitial(() -> {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+        return sdf;
+    });
 
     public DataProcessor(BlockingQueue<DataBatch> queue, AtomicLong processedRows, IngestionConfig config) {
         this.queue = queue;
@@ -36,7 +55,7 @@ public class DataProcessor implements Runnable {
             case DATABASE_BATCH:
                 return new DatabaseBatchHandler();
             case FILE_OUTPUT:
-                return new ThreadLocalFileOutputHandler();
+                return new FileOutputHandler();
             case IN_MEMORY_STORE:
                 return new InMemoryStoreHandler();
 //            case CUSTOM_HANDLER:
@@ -175,40 +194,6 @@ public class DataProcessor implements Runnable {
         return region.trim().toLowerCase();
     }
 
-    private String parseDate(String dateStr) {
-        // Return null for null or empty input
-        if (dateStr == null || dateStr.trim().isEmpty()) {
-            return null;
-        }
-
-        // Define all possible input formats
-        String[] possibleFormats = {
-                "yyyy-MM-dd",
-                "dd/MM/yyyy",
-                "MM-dd-yyyy",
-                "MMMM d, yyyy"
-        };
-
-        // Try each format until one works
-        for (String format : possibleFormats) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat(format);
-                sdf.setLenient(false); // Strict parsing - rejects invalid dates like "2024-13-40"
-                Date date = sdf.parse(dateStr.trim());
-
-                // Return in standardized format (or whatever format you need)
-                SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
-                return outputFormat.format(date);
-
-            } catch (ParseException ignored) {
-                // Continue to next format
-            }
-        }
-
-        // If no format worked, return null or original string
-        return dateStr; // or return dateStr; to keep original
-    }
-
     private String validateEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             return null;
@@ -218,5 +203,23 @@ public class DataProcessor implements Runnable {
 
     private double calculateRevenue(int quantity, double unitPrice, double discountPercent) {
         return Math.round(quantity * unitPrice * (100 - discountPercent)) / 100.0;
+    }
+
+    private String parseDate(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return null;
+        }
+
+        String trimmedDateStr = dateStr.trim();
+        SimpleDateFormat[] sdfs = THREAD_LOCAL_FORMATTERS.get();
+        for (SimpleDateFormat sdf : sdfs) {
+            try {
+                Date date = sdf.parse(trimmedDateStr);
+                return THREAD_LOCAL_OUTPUT_FORMATTER.get().format(date);
+            } catch (ParseException ignored) {
+                // try next format
+            }
+        }
+        return null;
     }
 }

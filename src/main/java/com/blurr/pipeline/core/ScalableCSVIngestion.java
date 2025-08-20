@@ -3,18 +3,30 @@ package com.blurr.pipeline.core;
 // Main ingestion orchestrator class
 
 import com.blurr.pipeline.config.IngestionConfig;
-import com.blurr.pipeline.handlers.impl.ThreadLocalFileOutputHandler;
 import com.blurr.pipeline.models.DataBatch;
 import com.blurr.pipeline.models.IngestionResult;
 import com.blurr.pipeline.models.ProcessingStrategy;
+import com.blurr.pipeline.util.FileMergerUtil;
+import com.blurr.pipeline.util.FileUtil;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ScalableCSVIngestion {
 
@@ -71,8 +83,11 @@ public class ScalableCSVIngestion {
             consumer.get();
         }
 
+        boolean allDone = consumers.stream().allMatch(Future::isDone);
+
         if (config.getStrategy().equals(ProcessingStrategy.FILE_OUTPUT)) {
-            ThreadLocalFileOutputHandler.performFinalMerge();
+            List<Path> processedTempFiles = FileUtil.findPathsWithPrefix("output", "temp_output_");
+            FileMergerUtil.mergeFiles(processedTempFiles, "final_output_" + processedRows.get() + "_rows.csv");
         }
 
         long endTime = System.currentTimeMillis();
