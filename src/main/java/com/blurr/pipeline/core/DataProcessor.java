@@ -27,6 +27,7 @@ public class DataProcessor implements Runnable {
     private static final String[] POSSIBLE_FORMATS = {
             "yyyy-MM-dd",
             "dd/MM/yyyy",
+            "MM/dd/yyyy",
             "MM-dd-yyyy",
             "MMMM d, yyyy"
     };

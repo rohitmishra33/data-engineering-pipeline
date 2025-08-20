@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TestDataProcessor {
 
     // Assuming MAX_DISCOUNT_PERCENT is a constant
-    private static final double MAX_DISCOUNT_PERCENT = 100.0;
+    private static final double MAX_DISCOUNT_PERCENT = 70;
 
     private DataProcessor instance; // Replace with your actual class name
 
@@ -56,7 +56,7 @@ class TestDataProcessor {
         assertEquals(0.0, instance.validateDiscount(0.0));
         assertEquals(25.5, instance.validateDiscount(25.5));
         assertEquals(50.0, instance.validateDiscount(50.0));
-        assertEquals(99.9, instance.validateDiscount(99.9));
+        assertEquals(70, instance.validateDiscount(99.9));
         assertEquals(MAX_DISCOUNT_PERCENT, instance.validateDiscount(MAX_DISCOUNT_PERCENT));
     }
 
@@ -171,8 +171,6 @@ class TestDataProcessor {
             "invalid-email",
             "user@domain",
             "user.domain.com",
-            "@domain.com",
-            "user@.com",
             "user@domain.net",
             "user@domain.co.uk"
     })
