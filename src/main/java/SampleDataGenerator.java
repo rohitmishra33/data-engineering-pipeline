@@ -162,9 +162,7 @@ public class SampleDataGenerator {
         // Simple CSV escaping: double quote if necessary
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fields.length; i++) {
-            if (fields[i] == null) {
-                sb.append("");
-            } else if (fields[i].contains(",") || fields[i].contains("\"")) {
+            if (fields[i].contains(",") || fields[i].contains("\"")) {
                 sb.append('"')
                         .append(fields[i].replace("\"", "\"\""))
                         .append('"');

@@ -8,6 +8,7 @@ import com.blurr.pipeline.models.IngestionResult;
 import com.blurr.pipeline.models.ProcessingStrategy;
 import com.blurr.pipeline.util.FileMergerUtil;
 import com.blurr.pipeline.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,7 +52,7 @@ public class ScalableCSVIngestion {
                     private final AtomicInteger counter = new AtomicInteger(0);
 
                     @Override
-                    public Thread newThread(Runnable r) {
+                    public Thread newThread(@NotNull Runnable r) {
                         Thread t = new Thread(r, "CSV-Processor-" + counter.incrementAndGet());
                         t.setDaemon(false);
                         return t;

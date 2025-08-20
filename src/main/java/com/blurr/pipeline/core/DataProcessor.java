@@ -51,18 +51,12 @@ public class DataProcessor implements Runnable {
     }
 
     private DataHandler createDataHandler(ProcessingStrategy strategy) {
-        switch (strategy) {
-            case DATABASE_BATCH:
-                return new DatabaseBatchHandler();
-            case FILE_OUTPUT:
-                return new FileOutputHandler();
-            case IN_MEMORY_STORE:
-                return new InMemoryStoreHandler();
-//            case CUSTOM_HANDLER:
-//                return new CustomDataHandler();
-            default:
-                throw new IllegalArgumentException("Unknown strategy: " + strategy);
-        }
+        return switch (strategy) {
+            case DATABASE_BATCH -> new DatabaseBatchHandler();
+            case FILE_OUTPUT -> new FileOutputHandler();
+            case IN_MEMORY_STORE -> new InMemoryStoreHandler();
+            default -> throw new IllegalArgumentException("Unknown strategy: " + strategy);
+        };
     }
 
     @Override
@@ -93,9 +87,7 @@ public class DataProcessor implements Runnable {
         for (String[] row : batch.getRows()) {
             try {
                 ProcessedRecord record = validateAndTransform(row);
-                if (record != null) {
-                    processedRecords.add(record);
-                }
+                processedRecords.add(record);
             } catch (Exception e) {
                 // Log error and continue processing
                 System.err.println("Error processing row: " + Arrays.toString(row) + " - " + e.getMessage());
@@ -181,17 +173,13 @@ public class DataProcessor implements Runnable {
         if (region == null || region.trim().isEmpty()) {
             return "unknown";
         }
-        switch (Character.toLowerCase(region.charAt(0))) {
-            case 'n':
-                return "North";
-            case 'e':
-                return "East";
-            case 'w':
-                return "West";
-            case 's':
-                return "South";
-        }
-        return region.trim().toLowerCase();
+        return switch (Character.toLowerCase(region.charAt(0))) {
+            case 'n' -> "North";
+            case 'e' -> "East";
+            case 'w' -> "West";
+            case 's' -> "South";
+            default -> region.trim().toLowerCase();
+        };
     }
 
     private String validateEmail(String email) {

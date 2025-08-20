@@ -19,7 +19,7 @@ public class ProcessedRecord {
     }
 
     public static class Builder {
-        private ProcessedRecord record = new ProcessedRecord();
+        private final ProcessedRecord record = new ProcessedRecord();
 
         public Builder orderId(String orderId) {
             record.orderId = orderId;
