@@ -70,7 +70,7 @@ public class ScalableCSVIngestion {
 
         // Signal completion to consumers
         for (int i = 0; i < config.getProcessorThreads(); i++) {
-            processingQueue.offer(DataBatch.POISON_PILL);
+            processingQueue.put(DataBatch.POISON_PILL);
         }
 
         // Wait for all consumers to finish
