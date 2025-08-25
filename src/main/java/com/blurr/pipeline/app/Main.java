@@ -1,8 +1,8 @@
 package com.blurr.pipeline.app;
 
 import com.blurr.pipeline.config.IngestionConfig;
-import com.blurr.pipeline.core.analytics.AnalyticalDataRefresher;
 import com.blurr.pipeline.core.ScalableCSVIngestion;
+import com.blurr.pipeline.core.analytics.AnalyticalDataRefresher;
 import com.blurr.pipeline.models.IngestionResult;
 import com.blurr.pipeline.models.ProcessingStrategy;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -38,7 +38,8 @@ public class Main {
         }
 
         // Run Analytics
-        if (ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("INGESTION_STRATEGY")))) {
+        if (!Boolean.parseBoolean(dotenv.get("SKIP_ANALYTICS_UPDATE"))
+                && ProcessingStrategy.DATABASE_BATCH.equals(ProcessingStrategy.valueOf(dotenv.get("INGESTION_STRATEGY")))) {
             AnalyticalDataRefresher.refreshAnalyticsAfterIngestion();
         }
     }
