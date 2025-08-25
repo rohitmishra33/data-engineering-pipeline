@@ -43,7 +43,10 @@ public class DatabaseBatchHandler implements DataHandler {
                             "rewriteBatchedStatements=true&" +
                             "useLocalSessionState=true&" +
                             "sessionVariables=transaction_isolation='READ-COMMITTED'&" +
-                            "useLocalTransactionState=true",
+                            "useLocalTransactionState=true&" +
+                            "cachePrepStmts=true&" +
+                            "prepStmtCacheSize=250&" +
+                            "prepStmtCacheSqlLimit=2048",
                     databaseUser,
                     databasePassword
             );
