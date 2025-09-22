@@ -8,6 +8,15 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+/*
+innodb_buffer_pool_size = 4G
+innodb_log_buffer_size = 512M
+innodb_log_file_size = 1G
+innodb_write_io_threads = 16
+innodb_read_io_threads=16
+innodb_flush_log_at_trx_commit = 0
+max_allowed_packet = 64M
+ */
 public class DatabaseBatchHandler implements DataHandler {
     private final Connection connection;
     private final PreparedStatement insertIgnoreStatement;
